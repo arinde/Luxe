@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LUXE — E-Commerce Checkout
+
+An e-commerce checkout flow built with **Next.js 14** (App Router), **TypeScript**, **Redux Toolkit**, **TailwindCSS**, and **shadcn/ui**. Integrates with **Interswitch Payment Gateway** (Web Checkout inline) for Nigerian Naira payments.
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **State**: Redux Toolkit + RTK Query
+- **Styling**: TailwindCSS + shadcn/ui
+- **Payment**: Interswitch Web Checkout (inline)
+- **Product API**: DummyJSON
+
+## Features
+
+- Product catalogue from DummyJSON API
+- Cart with localStorage persistence (24h expiry)
+- Checkout form with auto-save
+- Payment via Interswitch inline modal (no card data touches your server)
+- Server-side transaction verification via OAuth 2.0 + Interswitch requery
+- Payment status page with success/failed/cancelled states
+- All monetary values in kobo internally; converted from USD at ₦1,380/USD
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` or create `.env.local`:
 
-## Learn More
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_APP_URL` | App URL (e.g. `http://localhost:3000`) |
+| `ISW_MERCHANT_CODE` | Interswitch merchant code |
+| `ISW_PAY_ITEM_ID` | Interswitch pay item ID |
+| `ISW_CLIENT_ID` | Interswitch client ID for OAuth |
+| `ISW_SECRET_KEY` | Interswitch secret key for OAuth |
+| `ISW_PASSPORT_URL` | OAuth token endpoint base URL |
+| `ISW_REQUERY_BASE_URL` | Transaction requery base URL |
+| `NEXT_PUBLIC_ISW_MODE` | `TEST` or `LIVE` |
+| `NEXT_PUBLIC_ISW_SCRIPT_URL` | Interswitch inline checkout script URL |
 
-To learn more about Next.js, take a look at the following resources:
+### Sandbox Credentials
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Obtain from [Interswitch Developer Dashboard](https://developer.interswitchgroup.com).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Test Cards
 
-## Deploy on Vercel
+| Card | PAN | Expiry | CVV | PIN | Result |
+|---|---|---|---|---|---|
+| VISA | `4000000000002503` | `03/50` | `11` | `1111` | Success |
+| Verve | `5061050254756707864` | `06/26` | `111` | `1111` | Success |
+| Mastercard | `5123450000000008` | `01/39` | `100` | `1111` | Success |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Payment Flow
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. User adds products to cart and proceeds to checkout
+2. Fills contact and delivery details (auto-saved)
+3. Clicks Pay → server generates transaction ref (`LUXE_<email>_<timestamp>`)
+4. Interswitch inline modal opens; user enters card
+5. On success, redirect to status page → server verifies via Interswitch requery API
+6. Cart cleared on successful verification
+
+## Monetary Convention
+
+- **Store**: All prices in **kobo** (₦1 = 100 kobo)
+- **DummyJSON**: USD prices converted at ₦1,380/USD
+- **Display**: `formatCurrency(kobo)` divides by 100 for NGN display
+- **Interswitch**: Amount passed in kobo (minor unit) per Interswitch spec
