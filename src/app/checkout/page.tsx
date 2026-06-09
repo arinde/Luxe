@@ -127,7 +127,7 @@ export default function CheckoutPage() {
         cust_mobile_no: contact.phoneNumber,
         pay_item_name: "LUXE Order",
         mode: process.env.NEXT_PUBLIC_ISW_MODE,
-        onComplete: (response: { responseCode: string; txnref: string }) => {
+        onComplete: (response: { responseCode: string; txnref: string }) => {  
           sessionStorage.setItem("luxe_txn_ref", response.txnref);
           dispatch(
             sdkCompleted({
