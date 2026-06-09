@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 interface ISWTransactionResponse {
   Amount: number;
+  amount: number;
   ResponseCode: string;
   responseCode: string;
   ResponseDescription: string;
+  responseDescription: string;
   MerchantReference: string;
   PaymentReference: string;
   TransactionDate: string;
@@ -69,10 +71,14 @@ export async function GET(req: NextRequest) {
 
     const data: ISWTransactionResponse = await requeryRes.json();
     const responseCode = data.ResponseCode ?? data.responseCode ?? "XX";
-    // const responseDescription = data.ResponseDescription ?? data.responseDescription ?? "Unknown";
-    // const amount = data.Amount ?? data.amount ?? 0;
-    const isSuccess = responseCode === "00" || (process.env.ISW_MODE === "TEST" && responseCode === "Z1")
-    // Step 3 — map to a clean status
+    const responseDescription =
+      data.ResponseDescription ?? data.responseDescription ?? "Unknown";
+    const returnedAmount = data.Amount ?? data.amount ?? 0; // ← renamed
+
+    const isSuccess =
+      responseCode === "00" ||
+      (process.env.ISW_MODE === "TEST" && responseCode === "Z1");
+
     let status: "success" | "failed" | "cancelled";
     if (isSuccess) {
       status = "success";
@@ -85,9 +91,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       status,
       txnRef,
-      amount: data.Amount,
+      amount: returnedAmount,
       responseCode,
-      message: data.ResponseDescription ?? "Unknown",
+      message: responseDescription, 
     });
   } catch {
     return NextResponse.json(

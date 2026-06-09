@@ -39,10 +39,12 @@ const paymentSlice = createSlice({
         sdkCompleted(state, action: PayloadAction<{ responseCode: string; txnRef: string }>) {
             const { responseCode, txnRef} = action.payload;
             state.txnRef = action.payload.txnRef;
-            if (responseCode === "00") {
+            if (responseCode === "00" || responseCode === "Z1") {
                 state.status = "verifying"
-            } else {
+            } else if (responseCode === "09" || responseCode === "021") {
                 state.status = "cancelled"
+            } else {
+                state.status = "failed"
                 state.responseCode= responseCode
             }
             
