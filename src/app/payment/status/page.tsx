@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCart } from "@/store/slices/cartSlice";
@@ -9,7 +9,7 @@ import { useVerifyPaymentQuery } from "@/store/api/paymentApi";
 import ResultCard from "@/components/payment/ResultCard";
 import Breadcrumb from "@/components/ui/breadCrumb";
 
-export default function PaymentStatusPage() {
+function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const txnRef = searchParams.get("ref");
   const dispatch = useAppDispatch();
@@ -80,5 +80,13 @@ export default function PaymentStatusPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function PaymentStatusPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0C0C0C]" />}>
+      <PaymentStatusContent />
+    </Suspense>
   );
 }
