@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
   const [initPayment, { isLoading: isInitiating }] = useInitPaymentMutation();
 
-  useInterswitch();
+  const { ready: iswReady, error: iswError } = useInterswitch();
 
   // Load saved form data on mount
   useEffect(() => {
@@ -98,6 +98,11 @@ export default function CheckoutPage() {
     dispatch(setInitiating());
 
     try {
+      if (!iswReady) {
+        dispatch(setFailed(iswError || "Payment gateway not ready. Please wait and try again."));
+        return;
+      }
+
       const result = await initPayment({
         amount: totalInKobo,
         customerEmail: contact.email,
@@ -109,14 +114,6 @@ export default function CheckoutPage() {
 
       sessionStorage.setItem("luxe_txn_ref", result.txnRef);
       sessionStorage.setItem("luxe_txn_amount", String(totalInKobo));
-
-      // console.log("ISW payload:", {
-      //   merchant_code: result.merchantCode,
-      //   pay_item_id: result.payItemId,
-      //   txn_ref: result.txnRef,
-      //   amount: result.amount,
-      //   currency: result.currency,
-      // });
 
       window.webpayCheckout({
         merchant_code: result.merchantCode,
