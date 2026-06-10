@@ -1,6 +1,6 @@
 
 import { ShoppingBag, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface NavbarProps {
   cartCount: number;
@@ -10,6 +10,9 @@ interface NavbarProps {
 
 export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setIsMounted] = useState(false)
+
+  useEffect(() => setIsMounted(true), [])
 
   return (
     <>
@@ -41,7 +44,7 @@ export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
             className="relative flex items-center justify-center p-2 bg-transparent border-none cursor-pointer text-[#F5F5F3]"
           >
             <ShoppingBag size={20} strokeWidth={1.5} />
-            {cartCount > 0 && (
+            {mounted && cartCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-[17px] h-[17px] rounded-full bg-[#E8C547] text-[#0C0C0C] text-[10px] font-bold flex items-center justify-center">
                 {cartCount}
               </span>

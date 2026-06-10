@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 interface ISWTransactionResponse {
-  Amount: number;
-  amount: number;
-  ResponseCode: string;
-  responseCode: string;
-  ResponseDescription: string;
-  responseDescription: string;
-  MerchantReference: string;
-  PaymentReference: string;
-  TransactionDate: string;
+  Amount?: number;
+  amount?: number;
+  ResponseCode?: string;
+  responseCode?: string;
+  ResponseDescription?: string;
+  responseDescription?: string;
+  MerchantReference?: string;
+  PaymentReference?: string;
+  TransactionDate?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -20,60 +20,34 @@ export async function GET(req: NextRequest) {
   if (!txnRef || !amount) {
     return NextResponse.json(
       { error: "txnRef and amount are required" },
-
-      { status: 400 },
+      { status: 400 }
     );
   }
+
   try {
-    const credentials = Buffer.from(
-      `${process.env.ISW_CLIENT_ID}:${process.env.ISW_SECRET_KEY}`,
-    ).toString("base64");
-
-    const tokenRes = await fetch(
-      `${process.env.ISW_PASSPORT_URL}/passport/oauth/token`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: "grant_type=client_credentials&scope=profile",
-      },
-    );
-    if (!tokenRes.ok) {
-      return NextResponse.json(
-        { error: "Failed to get access token" },
-        { status: 502 },
-      );
-    }
-    const { access_token } = await tokenRes.json();
-
-    // Step 2 — call Interswitch transaction requery
     const requeryRes = await fetch(
       `${process.env.ISW_REQUERY_BASE_URL}/collections/api/v1/gettransaction.json` +
         `?merchantcode=${process.env.ISW_MERCHANT_CODE}` +
         `&transactionreference=${txnRef}` +
         `&amount=${amount}`,
       {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-          "Content-Type": "application/json",
-        },
-      },
+        headers: { "Content-Type": "application/json" },
+      }
     );
 
     if (!requeryRes.ok) {
       return NextResponse.json(
         { error: "Requery request failed" },
-        { status: 502 },
+        { status: 502 }
       );
     }
 
     const data: ISWTransactionResponse = await requeryRes.json();
+
     const responseCode = data.ResponseCode ?? data.responseCode ?? "XX";
     const responseDescription =
       data.ResponseDescription ?? data.responseDescription ?? "Unknown";
-    const returnedAmount = data.Amount ?? data.amount ?? 0; // ← renamed
+    const returnedAmount = data.Amount ?? data.amount ?? 0;
 
     const isSuccess =
       responseCode === "00" ||
@@ -93,7 +67,7 @@ export async function GET(req: NextRequest) {
       txnRef,
       amount: returnedAmount,
       responseCode,
-      message: responseDescription, 
+      message: responseDescription,
     });
   } catch {
     return NextResponse.json(
@@ -103,7 +77,7 @@ export async function GET(req: NextRequest) {
         responseCode: "XX",
         message: "Network error during verification",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

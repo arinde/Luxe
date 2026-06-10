@@ -20,11 +20,22 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const DELIVERY = 3500;                    // ₦3,500
+ 
+  const [contact, setContact] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+  });
+  const [address, setAddress] = useState({ address: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [mounted, setIsMounted] = useState(false)
+
+  const isFirstRender = useRef(true);
+   const DELIVERY = 3500;                    // ₦3,500
   const DELIVERY_IN_KOBO = DELIVERY * 100;  // 350,000 kobo
   const FREE_DELIVERY_THRESHOLD = 100000;   
-
   const items = useAppSelector((state) => state.cart.items);
+  const displayItems = mounted ? items : []
   const paymentStatus = useAppSelector((state) => state.payment.status);
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -33,15 +44,6 @@ export default function CheckoutPage() {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalInKobo = subtotal + DELIVERY_IN_KOBO;
 
-  const [contact, setContact] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-  });
-  const [address, setAddress] = useState({ address: "" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const isFirstRender = useRef(true);
 
   const [initPayment, { isLoading: isInitiating }] = useInitPaymentMutation();
 
@@ -58,6 +60,7 @@ export default function CheckoutPage() {
       } catch {}
     }
   }, []);
+  useEffect(() => setIsMounted(true), [])
 
   // Save form data on every change (skip initial mount)
   useEffect(() => {
@@ -169,7 +172,7 @@ export default function CheckoutPage() {
 
         {/* Right: Summary */}
         <CheckoutOrderSummary
-          items={items}
+          items={displayItems}
           subtotal={subtotal}
           delivery={DELIVERY_IN_KOBO}
           freeDeliveryThreshold={FREE_DELIVERY_THRESHOLD}

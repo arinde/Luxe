@@ -26,7 +26,6 @@ function PaymentStatusContent() {
   const shouldSkip =
     !txnRef ||
     txnRef === "none" ||
-    status !== "verifying" ||
     !storedAmount;
 
   const { data, isError, isLoading } = useVerifyPaymentQuery(
