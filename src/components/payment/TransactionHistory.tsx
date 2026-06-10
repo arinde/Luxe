@@ -29,6 +29,7 @@ export interface TransactionRecord {
   responseCode: string;
   message: string;
   completedAt: number;
+  items?: { productId: number; title: string; price: number; quantity: number; thumbnail: string }[];
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -156,6 +157,17 @@ export default function TransactionHistory() {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const summary = useMemo(() => {
+    const total = data.length;
+    const successful = data.filter((t) => t.status === "success").length;
+    const failed = data.filter((t) => t.status === "failed").length;
+    const cancelled = data.filter((t) => t.status === "cancelled").length;
+    const totalAmount = data
+      .filter((t) => t.status === "success")
+      .reduce((sum, t) => sum + t.amount, 0);
+    return { total, successful, failed, cancelled, totalAmount };
+  }, [data]);
+
   if (data.length === 0) {
     return (
       <div className="text-center py-20">
@@ -166,6 +178,15 @@ export default function TransactionHistory() {
 
   return (
     <>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+        <SummaryCard label="Total" value={summary.total} />
+        <SummaryCard label="Successful" value={summary.successful} variant="success" />
+        <SummaryCard label="Failed" value={summary.failed} variant="failed" />
+        <SummaryCard label="Cancelled" value={summary.cancelled} variant="cancelled" />
+        <SummaryCard label="Total Spent" value={summary.totalAmount} isCurrency />
+      </div>
+
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -211,5 +232,36 @@ export default function TransactionHistory() {
         />
       )}
     </>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  variant,
+  isCurrency,
+}: {
+  label: string;
+  value: number;
+  variant?: "success" | "failed" | "cancelled";
+  isCurrency?: boolean;
+}) {
+  const accent = variant
+    ? variant === "success"
+      ? "#4CAF82"
+      : variant === "failed"
+      ? "#E05A5A"
+      : "#888888"
+    : "#E8C547";
+
+  return (
+    <div className="bg-[#161616] border border-[#2A2A2A] rounded-xl p-4">
+      <p className="text-[#888888] text-xs uppercase tracking-widest font-medium mb-1">
+        {label}
+      </p>
+      <p className="text-2xl font-bold" style={{ color: accent }}>
+        {isCurrency ? formatCurrency(value) : value}
+      </p>
+    </div>
   );
 }

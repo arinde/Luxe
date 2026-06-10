@@ -58,7 +58,7 @@ function PaymentStatusContent() {
   // Persist completed transaction to history
   useEffect(() => {
     if (status === "success" || status === "failed" || status === "cancelled") {
-      const record = {
+      const record: any = {
         txnRef: txnRef || sessionStorage.getItem("luxe_txn_ref") || "",
         amount: amount ?? storedAmount,
         status,
@@ -66,6 +66,12 @@ function PaymentStatusContent() {
         message: error ?? "",
         completedAt: Date.now(),
       };
+      if (status === "success") {
+        const savedItems = localStorage.getItem("luxe_receipt_items");
+        if (savedItems) {
+          try { record.items = JSON.parse(savedItems); } catch {}
+        }
+      }
       if (!record.txnRef) return;
       const history = JSON.parse(
         localStorage.getItem("luxe_transactions") || "[]"

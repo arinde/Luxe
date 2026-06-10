@@ -7,9 +7,10 @@ interface NavbarProps {
   onCartClick: () => void;
   onLogoClick: () => void;
   onPaymentClick: () => void;
+  onAdminClick: () => void;
 }
 
-export function Navbar({ cartCount, onCartClick, onLogoClick, onPaymentClick }: NavbarProps) {
+export function Navbar({ cartCount, onCartClick, onLogoClick, onPaymentClick, onAdminClick }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), [])
@@ -38,6 +39,12 @@ export function Navbar({ cartCount, onCartClick, onLogoClick, onPaymentClick }: 
             className="text-[13px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none"
           >
             Payments
+          </button>
+          <button
+            onClick={onAdminClick}
+            className="text-[13px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none"
+          >
+            Admin
           </button>
         </div>
 

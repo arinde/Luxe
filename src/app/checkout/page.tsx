@@ -98,6 +98,8 @@ export default function CheckoutPage() {
     dispatch(setInitiating());
 
     try {
+      localStorage.setItem("luxe_receipt_items", JSON.stringify(items));
+
       const result = await initPayment({
         amount: totalInKobo,
         customerEmail: contact.email,

@@ -51,6 +51,20 @@ export default function ReceiptModal({ record, onClose }: ReceiptModalProps) {
   <div class="row"><span class="label">Status</span><span class="value"><span class="status ${record.status}">${STATUS_LABELS[record.status] ?? record.status}</span></span></div>
   <div class="row"><span class="label">Response Code</span><span class="value">${record.responseCode || "—"}</span></div>
   <div class="row"><span class="label">Message</span><span class="value">${record.message || "—"}</span></div>
+  ${record.items && record.items.length > 0 ? `
+  <hr class="divider">
+  <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:12px;">Items Purchased</h3>
+  ${record.items.map(item => `
+  <div style="display:flex;align-items:center;gap:12px;padding:6px 0;">
+    <img src="${item.thumbnail}" alt="${item.title}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;" />
+    <div style="flex:1;font-size:13px;">
+      <div style="font-weight:600;">${item.title}</div>
+      <div style="color:#888;">NGN ${(item.price / 100).toLocaleString()} x ${item.quantity}</div>
+    </div>
+    <div style="font-weight:600;font-size:13px;">NGN ${((item.price * item.quantity) / 100).toLocaleString()}</div>
+  </div>
+  `).join("")}
+  ` : ""}
   <hr class="divider">
   <div class="footer">
     <p>Thank you for shopping with LUXE</p>
@@ -103,6 +117,26 @@ export default function ReceiptModal({ record, onClose }: ReceiptModalProps) {
           <Row label="Response Code" value={record.responseCode || "—"} />
           <Row label="Message" value={record.message || "—"} />
         </div>
+
+        {record.items && record.items.length > 0 && (
+          <div className="border-t border-[#2A2A2A] pt-4 mt-4">
+            <h3 className="text-[#F5F5F3] text-xs font-semibold uppercase tracking-widest mb-3">Items Purchased</h3>
+            <div className="space-y-2">
+              {record.items.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#1A1A1A] overflow-hidden shrink-0 border border-[#2A2A2A]">
+                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[#F5F5F3] text-sm truncate">{item.title}</p>
+                    <p className="text-[#888888] text-xs">{formatCurrency(item.price)} x {item.quantity}</p>
+                  </div>
+                  <span className="text-[#F5F5F3] text-sm font-medium">{formatCurrency(item.price * item.quantity)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button
           onClick={handleDownload}
