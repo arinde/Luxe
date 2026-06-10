@@ -1,7 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-
-export type PaymentStatus = "idle" | "initiating" | "processing" | "verifying" | "success" | "failed" | "cancelled";
+export type PaymentStatus =
+  | "idle"
+  | "initiating"
+  | "processing"
+  | "verifying"
+  | "success"
+  | "failed"
+  | "cancelled";
 
 interface PaymentState {
   status: PaymentStatus;
@@ -12,61 +18,60 @@ interface PaymentState {
   verifiedAt: number | null;
 }
 const initialState: PaymentState = {
-    txnRef: null,
-    status: 'idle',
-    amount: null,
-    error: null,
-    responseCode: null,
-    verifiedAt: null,
-}
+  txnRef: null,
+  status: "idle",
+  amount: null,
+  error: null,
+  responseCode: null,
+  verifiedAt: null,
+};
 const paymentSlice = createSlice({
-    name: 'payment',
-    initialState: initialState,
-    reducers : {
-        resetPayment: () => initialState,
+  name: "payment",
+  initialState: initialState,
+  reducers: {
+    resetPayment: () => initialState,
 
-        setInitiating(state) {
-            state.status = "initiating"
-            state.error= null;
-        },
+    setInitiating(state) {
+      state.status = "initiating";
+      state.error = null;
+    },
 
-        setProcessing(state, action: PayloadAction<{ txnRef: string; amount: number;}>) {
-            state.status= "processing"
-            state.txnRef= action.payload.txnRef;
-            state.amount= action.payload.amount;
-        },
+    setProcessing(
+      state,
+      action: PayloadAction<{ txnRef: string; amount: number }>,
+    ) {
+      state.status = "processing";
+      state.txnRef = action.payload.txnRef;
+      state.amount = action.payload.amount;
+    },
 
-        sdkCompleted(state, action: PayloadAction<{ responseCode: string; txnRef: string }>) {
-            const { responseCode, txnRef } = action.payload;
-            state.txnRef = txnRef;
-            state.responseCode = responseCode;
-            if (responseCode === "00" || responseCode === "Z1") {
-                state.status = "verifying";
-            } else if (responseCode === "09" || responseCode === "021") {
-                state.status = "cancelled";
-            } else {
-                state.status = "failed";
-            }
-        },
-        setVerifyResult (
-            state,
-            action : PayloadAction<{responseCode: string; message: string }>
-        ) {
-            const { responseCode, message} = action.payload;
-            state.responseCode = responseCode;
-            state.verifiedAt = Date.now();
-            if (responseCode === "00" || responseCode === "Z1"){
-                state.status = "success"
-            } else {
-                state.status= "failed"
-                state.error = message
-            }
-        },
-        setFailed (state, action: PayloadAction<string>) {
-            state.status = "failed";
-            state.error = action.payload;
-        }
-    }
+    sdkCompleted(
+      state,
+      action: PayloadAction<{ responseCode: string; txnRef: string }>,
+    ) {
+      const { txnRef } = action.payload;
+      state.txnRef = txnRef;
+      state.status = "verifying"; // always
+    },
+    setVerifyResult(
+      state,
+      action: PayloadAction<{ responseCode: string; message: string }>,
+    ) {
+      const { responseCode, message } = action.payload;
+      state.responseCode = responseCode;
+      state.verifiedAt = Date.now();
+      if (responseCode === "00" || responseCode === "Z1") {
+        state.status = "success";
+      } else {
+        state.status = "failed";
+        state.error = message;
+      }
+    },
+    setFailed(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+  },
 });
 
 export const {
