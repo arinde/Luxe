@@ -1,0 +1,215 @@
+"use client";
+
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  flexRender,
+  createColumnHelper,
+  SortingState,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { ArrowUpDown, RotateCcw, Receipt } from "lucide-react";
+import ReceiptModal from "./ReceiptModal";
+
+export interface TransactionRecord {
+  txnRef: string;
+  amount: number;
+  status: "success" | "failed" | "cancelled";
+  responseCode: string;
+  message: string;
+  completedAt: number;
+}
+
+const STATUS_STYLES: Record<string, string> = {
+  success: "bg-[#4CAF82]/15 text-[#4CAF82] border border-[#4CAF82]/30",
+  failed: "bg-[#E05A5A]/15 text-[#E05A5A] border border-[#E05A5A]/30",
+  cancelled: "bg-[#888888]/15 text-[#888888] border border-[#888888]/30",
+};
+
+export default function TransactionHistory() {
+  const [data, setData] = useState<TransactionRecord[]>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "completedAt", desc: true },
+  ]);
+  const [selectedTxn, setSelectedTxn] = useState<TransactionRecord | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const raw = localStorage.getItem("luxe_transactions");
+    if (raw) {
+      try {
+        setData(JSON.parse(raw));
+      } catch {}
+    }
+  }, []);
+
+  const columnHelper = createColumnHelper<TransactionRecord>();
+
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: "index",
+        header: "#",
+        cell: (info) => info.row.index + 1,
+      }),
+      columnHelper.accessor("completedAt", {
+        header: ({ column }) => (
+          <button
+            onClick={() => column.toggleSorting()}
+            className="flex items-center gap-1 hover:text-[#F5F5F3] transition-colors"
+          >
+            Date
+            <ArrowUpDown size={14} />
+          </button>
+        ),
+        cell: (info) => formatDate(info.getValue()),
+        sortingFn: "basic",
+      }),
+      columnHelper.accessor("txnRef", {
+        header: "Transaction Ref",
+        cell: (info) => (
+          <span className="font-mono text-xs">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor("amount", {
+        header: "Amount",
+        cell: (info) => formatCurrency(info.getValue()),
+      }),
+      columnHelper.accessor("status", {
+        header: "Status",
+        cell: (info) => {
+          const status = info.getValue();
+          return (
+            <span
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
+                STATUS_STYLES[status] ?? STATUS_STYLES.failed
+              }`}
+            >
+              {status}
+            </span>
+          );
+        },
+      }),
+      columnHelper.accessor("responseCode", {
+        header: "Response Code",
+        cell: (info) => (
+          <span className="font-mono text-xs text-[#888888]">
+            {info.getValue() || "—"}
+          </span>
+        ),
+      }),
+      columnHelper.accessor("message", {
+        header: "Message",
+        cell: (info) => (
+          <span className="text-xs text-[#888888] max-w-[200px] truncate block">
+            {info.getValue() || "—"}
+          </span>
+        ),
+      }),
+      columnHelper.display({
+        id: "receipt",
+        header: "",
+        cell: (info) => (
+          <button
+            onClick={() => setSelectedTxn(info.row.original)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent border border-[#2A2A2A] text-[#888888] text-xs font-medium rounded-lg hover:border-[#E8C547] hover:text-[#E8C547] transition-colors cursor-pointer"
+          >
+            <Receipt size={14} />
+            Receipt
+          </button>
+        ),
+      }),
+      columnHelper.display({
+        id: "retry",
+        header: "",
+        cell: (info) => (
+          <button
+            onClick={() => router.push("/checkout")}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E8C547] text-[#0C0C0C] text-xs font-semibold rounded-lg hover:bg-[#D4B23A] transition-colors"
+          >
+            <RotateCcw size={14} />
+            Retry
+          </button>
+        ),
+      }),
+    ],
+    [columnHelper, router]
+  );
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  if (data.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-[#888888] text-sm">No transactions yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="text-[#888888] text-xs uppercase tracking-widest font-medium"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="border-[#2A2A2A] hover:bg-[#1A1A1A] transition-colors"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="text-[#F5F5F3] text-sm whitespace-nowrap">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {selectedTxn && (
+        <ReceiptModal
+          record={selectedTxn}
+          onClose={() => setSelectedTxn(null)}
+        />
+      )}
+    </>
+  );
+}

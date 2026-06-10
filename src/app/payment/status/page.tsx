@@ -55,6 +55,33 @@ function PaymentStatusContent() {
     }
   }, [status, dispatch]);
 
+  // Persist completed transaction to history
+  useEffect(() => {
+    if (status === "success" || status === "failed" || status === "cancelled") {
+      const record = {
+        txnRef: txnRef || sessionStorage.getItem("luxe_txn_ref") || "",
+        amount: amount ?? storedAmount,
+        status,
+        responseCode: responseCode ?? "",
+        message: error ?? "",
+        completedAt: Date.now(),
+      };
+      if (!record.txnRef) return;
+      const history = JSON.parse(
+        localStorage.getItem("luxe_transactions") || "[]"
+      );
+      const existingIndex = history.findIndex(
+        (t: any) => t.txnRef === record.txnRef
+      );
+      if (existingIndex >= 0) {
+        history[existingIndex] = record;
+      } else {
+        history.unshift(record);
+      }
+      localStorage.setItem("luxe_transactions", JSON.stringify(history));
+    }
+  }, [status, txnRef, amount, responseCode, error, storedAmount]);
+
   function handleRetry() {
     dispatch(resetPayment());
     router.push("/checkout");

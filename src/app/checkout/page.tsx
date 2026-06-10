@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
   const [initPayment, { isLoading: isInitiating }] = useInitPaymentMutation();
 
-  const { ready: iswReady, error: iswError } = useInterswitch();
+  useInterswitch();
 
   // Load saved form data on mount
   useEffect(() => {
@@ -98,11 +98,6 @@ export default function CheckoutPage() {
     dispatch(setInitiating());
 
     try {
-      if (!iswReady) {
-        dispatch(setFailed(iswError || "Payment gateway not ready. Please wait and try again."));
-        return;
-      }
-
       const result = await initPayment({
         amount: totalInKobo,
         customerEmail: contact.email,

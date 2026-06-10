@@ -6,9 +6,10 @@ interface NavbarProps {
   cartCount: number;
   onCartClick: () => void;
   onLogoClick: () => void;
+  onPaymentClick: () => void;
 }
 
-export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
+export function Navbar({ cartCount, onCartClick, onLogoClick, onPaymentClick }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), [])
@@ -32,6 +33,12 @@ export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
               {item}
             </span>
           ))}
+          <button
+            onClick={onPaymentClick}
+            className="text-[13px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none"
+          >
+            Payments
+          </button>
         </div>
 
         {/* Right side: Cart + Mobile Menu Toggle */}
@@ -71,6 +78,12 @@ export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
               {item}
             </span>
           ))}
+          <button
+            onClick={() => { setMenuOpen(false); onPaymentClick(); }}
+            className="text-[15px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none text-left"
+          >
+            Payments
+          </button>
         </div>
       )}
     </>
