@@ -6,13 +6,20 @@ interface ProductState {
   loading: boolean;
   error: string | null;
 }
+interface categoryState {
+   
+  selectedCategory: string,
+}
 
 const initialState: ProductState = {
   currentProduct: null,
   loading: false,
   error: null,
 };
-
+const selectedCategory: categoryState ={
+ 
+  selectedCategory: 'all'
+}
 const productSlice = createSlice({
   name: "product",
   initialState,
@@ -38,5 +45,18 @@ const productSlice = createSlice({
   },
 });
 
+const categorySlice = createSlice({
+  name: 'productCategory',
+  initialState: selectedCategory,
+  reducers:{
+    setCategory(state, action: PayloadAction<string>) {
+    
+      state.selectedCategory = action.payload
+    }
+  }
+})
+
 export const { setProduct, setLoading, setError, clearProduct } = productSlice.actions;
-export default productSlice.reducer;
+export const { setCategory } = categorySlice.actions
+export const productReducer = productSlice.reducer;
+export const categoryReducer = categorySlice.reducer;

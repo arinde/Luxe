@@ -1,6 +1,6 @@
 "use client";
 
-import TransactionHistory from "@/components/payment/TransactionHistory";
+import TransactionHistory from "./component/TransactionHistory";
 import Breadcrumb from "@/components/ui/breadCrumb";
 
 export default function PaymentHistoryPage() {

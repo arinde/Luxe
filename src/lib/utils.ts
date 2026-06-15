@@ -15,10 +15,6 @@ export function formatCurrency(amountInKobo: number): string {
   }).format(amountInKobo / 100);
 }
 
-// export function generateTxnRef(): string {
-//   return crypto.randomUUID();
-// }
-
 export function formatDate(date: Date | number): string {
   return new Intl.DateTimeFormat("en-NG", {
     day: "2-digit",

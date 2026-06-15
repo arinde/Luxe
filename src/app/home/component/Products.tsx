@@ -1,13 +1,14 @@
 "use client";
 import Image from "next/image";
-import { useGetProductsQuery } from "@/store/api/productApi";
-import ProductSkeleton from "../shared/skeletons/ProductSkeleton";
-import ProductCard from "../ui/productCard";
+import { useGetProductsQuery, useGetProductByCategoryQuery } from "@/store/api/productApi";
+import ProductSkeleton from "../../../components/shared/skeletons/ProductSkeleton";
+import ProductCard from "../../../components/ui/productCard";
 import { Product } from "@/types/type";
-import { BadgeVariant } from "../ui/productCard";
+import { BadgeVariant } from "../../../components/ui/productCard";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import type { RootState } from "@/store";
+import { useAppSelector } from "@/store/hooks";
 
 const getBadge = (product: Product): BadgeVariant | undefined => {
   if (product.rating >= 4.8) return "BESTSELLER";
@@ -17,7 +18,9 @@ const getBadge = (product: Product): BadgeVariant | undefined => {
 };
 
 export default function ProductsSection() {
-  const { data, isLoading, error } = useGetProductsQuery();
+
+  const activeCategory = useAppSelector((state) => state.category.selectedCategory)
+  const { data, isLoading, error } = useGetProductByCategoryQuery(activeCategory)
   const storeProducts = data?.products ?? [];
   const dispatch = useDispatch()
 
@@ -37,7 +40,9 @@ export default function ProductsSection() {
 
   return (
     <div className="mx-10">
-      <h1>Welcome to the product section</h1>
+<h1 className="font-syne font-bold text-2xl tracking-wide text-gray-700 my-8">
+  Welcome to the product section
+</h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {isLoading ? (
           <div>

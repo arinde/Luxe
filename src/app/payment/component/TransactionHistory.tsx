@@ -3,24 +3,13 @@
 import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
   createColumnHelper,
   SortingState,
 } from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ArrowUpDown, RotateCcw, Receipt } from "lucide-react";
 import ReceiptModal from "./ReceiptModal";
+import DataTable from "@/components/ui/data-table";
 
 export interface TransactionRecord {
   txnRef: string;
@@ -148,15 +137,6 @@ export default function TransactionHistory() {
     [columnHelper, router]
   );
 
-  const table = useReactTable({
-    data,
-    columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
-
   const summary = useMemo(() => {
     const total = data.length;
     const successful = data.filter((t) => t.status === "success").length;
@@ -168,17 +148,8 @@ export default function TransactionHistory() {
     return { total, successful, failed, cancelled, totalAmount };
   }, [data]);
 
-  if (data.length === 0) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-[#888888] text-sm">No transactions yet.</p>
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
         <SummaryCard label="Total" value={summary.total} />
         <SummaryCard label="Successful" value={summary.successful} variant="success" />
@@ -187,43 +158,13 @@ export default function TransactionHistory() {
         <SummaryCard label="Total Spent" value={summary.totalAmount} isCurrency />
       </div>
 
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="text-[#888888] text-xs uppercase tracking-widest font-medium"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className="border-[#2A2A2A] hover:bg-[#1A1A1A] transition-colors"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-[#F5F5F3] text-sm whitespace-nowrap">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={data}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        emptyMessage="No transactions yet."
+      />
 
       {selectedTxn && (
         <ReceiptModal

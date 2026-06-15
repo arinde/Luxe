@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { CheckoutHeader } from "@/components/checkout/CheckoutHeader";
-import { ContactInformationForm } from "@/components/checkout/ContactInformationForm";
-import { DeliveryAddressForm } from "@/components/checkout/DeliveryAddressForm";
-import { PaymentMethod } from "@/components/checkout/PaymentMethod";
-import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
+import { CheckoutHeader } from "@/app/checkout/component/CheckoutHeader";
+import { ContactInformationForm } from "@/app/checkout/component/ContactInformationForm";
+import { DeliveryAddressForm } from "@/app/checkout/component/DeliveryAddressForm";
+// import { PaymentMethod } from "@/components/checkout/PaymentMethod";
+import { CheckoutOrderSummary } from "@/app/checkout/component/CheckoutOrderSummary";
 import Breadcrumb from "@/components/ui/breadCrumb";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useRouter } from "next/navigation";
@@ -161,7 +161,7 @@ export default function CheckoutPage() {
               setAddress((prev) => ({ ...prev, [field]: value }))
             }
           />
-          <PaymentMethod />
+          {/* <PaymentMethod /> */}
         </div>
 
         {/* Right: Summary */}

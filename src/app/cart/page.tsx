@@ -1,9 +1,9 @@
 "use client"
 import Breadcrumb from "@/components/ui/breadCrumb";
-import { CartHeader } from "@/components/cart/CartHeader";
-import { CartList } from "@/components/cart/CartList";
-import { OrderSummary } from "@/components/cart/OrderSummary";
-import EmptyCart from "@/components/cart/EmptyCart";
+import { CartHeader } from "@/app/cart/components/CartHeader";
+import { CartList } from "@/app/cart/components/cart/CartList";
+import { OrderSummary } from "@/app/cart/components/OrderSummary";
+import EmptyCart from "@/app/cart/components/EmptyCart";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { incrementQuantity, decrementQuantity, removeItem } from "@/store/slices/cartSlice";
 import { useRouter } from "next/navigation";

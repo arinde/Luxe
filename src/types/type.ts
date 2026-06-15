@@ -17,3 +17,9 @@ export interface ProductsResponse {
     skip: number,
     limit: number
 }
+
+export interface categories {
+    slug: string,
+    name: string,
+    url: string
+}

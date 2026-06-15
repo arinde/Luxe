@@ -1,5 +1,5 @@
-import { HeroSection } from "@/components/home/Hero";
-import ProductsSection from "@/components/home/Products";
+import { HeroSection } from "@/app/home/component/Hero";
+import ProductsSection from "@/app/home/component/Products";
 import Footer from "@/components/layout/Footer";
 
 
