@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { setInitiating, setProcessing, sdkCompleted, setFailed } from "@/store/slices/paymentSlice";
 import { useInitPaymentMutation } from "@/store/api/paymentApi";
 import { useInterswitch } from "@/hooks/useInterswitch";
+import { useToast } from "@/components/shared/toast/ToastProvider";
 
 declare global {
   interface Window {
@@ -28,6 +29,7 @@ export default function CheckoutPage() {
   const paymentStatus = useAppSelector((state) => state.payment.status);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { showToast } = useToast();
 
   
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -93,7 +95,10 @@ export default function CheckoutPage() {
   }
 
   async function handlePay() {
-    if (!validate()) return;
+    if (!validate()) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
 
     dispatch(setInitiating());
 
@@ -136,6 +141,7 @@ export default function CheckoutPage() {
       });
     } catch {
       dispatch(setFailed("Could not initiate payment. Please try again."));
+      showToast('Payment initiation failed. Please try again.', 'error');
     }
   }
 

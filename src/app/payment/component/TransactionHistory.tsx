@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { ArrowUpDown, RotateCcw, Receipt } from "lucide-react";
 import ReceiptModal from "./ReceiptModal";
 import DataTable from "@/components/ui/data-table";
+import TableSkeleton from "@/components/shared/skeletons/TableSkeleton";
 
 export interface TransactionRecord {
   txnRef: string;
@@ -29,6 +30,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function TransactionHistory() {
   const [data, setData] = useState<TransactionRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "completedAt", desc: true },
   ]);
@@ -42,6 +44,7 @@ export default function TransactionHistory() {
         setData(JSON.parse(raw));
       } catch {}
     }
+    setIsLoading(false);
   }, []);
 
   const columnHelper = createColumnHelper<TransactionRecord>();
@@ -147,6 +150,23 @@ export default function TransactionHistory() {
       .reduce((sum, t) => sum + t.amount, 0);
     return { total, successful, failed, cancelled, totalAmount };
   }, [data]);
+
+  if (isLoading) {
+    return (
+      <>
+        {/* Summary Cards Skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="bg-[#161616] border border-[#2A2A2A] rounded-xl p-4">
+              <div className="h-3 w-16 animate-pulse rounded bg-[#2A2A2A] mb-2" />
+              <div className="h-8 w-20 animate-pulse rounded bg-[#2A2A2A]" />
+            </div>
+          ))}
+        </div>
+        <TableSkeleton rows={6} columns={9} />
+      </>
+    );
+  }
 
   return (
     <>

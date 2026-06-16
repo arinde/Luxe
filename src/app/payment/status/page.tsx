@@ -6,14 +6,16 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCart } from "@/store/slices/cartSlice";
 import { setVerifyResult, setFailed, resetPayment } from "@/store/slices/paymentSlice";
 import { useVerifyPaymentQuery } from "@/store/api/paymentApi";
-import ResultCard from "@/components/payment/ResultCard";
+import ResultCard from "../component/ResultCard";
 import Breadcrumb from "@/components/ui/breadCrumb";
+import { useToast } from "@/components/shared/toast/ToastProvider";
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const txnRef = searchParams.get("ref");
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { showToast } = useToast();
   const { status, error, responseCode, amount } = useAppSelector(
     (state) => state.payment
   );
@@ -44,16 +46,22 @@ function PaymentStatusContent() {
   useEffect(() => {
     if (isError) {
       dispatch(setFailed("Verification failed. Please contact support."));
+      showToast('Payment verification failed. Please contact support.', 'error');
     }
-  }, [isError, dispatch]);
+  }, [isError, dispatch, showToast]);
 
   useEffect(() => {
     if (status === "success") {
       dispatch(clearCart());
+      showToast('Payment successful! Thank you for your order.', 'success');
       sessionStorage.removeItem("luxe_txn_ref");
       sessionStorage.removeItem("luxe_txn_amount");
+    } else if (status === "failed") {
+      showToast('Payment failed. Please try again.', 'error');
+    } else if (status === "cancelled") {
+      showToast('Payment was cancelled.', 'info');
     }
-  }, [status, dispatch]);
+  }, [status, dispatch, showToast]);
 
   // Persist completed transaction to history
   useEffect(() => {

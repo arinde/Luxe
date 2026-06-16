@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import type { RootState } from "@/store";
 import { useAppSelector } from "@/store/hooks";
+import { useToast } from "@/components/shared/toast/ToastProvider";
 
 const getBadge = (product: Product): BadgeVariant | undefined => {
   if (product.rating >= 4.8) return "BESTSELLER";
@@ -23,6 +24,7 @@ export default function ProductsSection() {
   const { data, isLoading, error } = useGetProductByCategoryQuery(activeCategory)
   const storeProducts = data?.products ?? [];
   const dispatch = useDispatch()
+  const { showToast } = useToast()
 
   const handleAddTocart = (id: number) => {
     const product = storeProducts.find((p) => p.id === id)
@@ -34,6 +36,7 @@ export default function ProductsSection() {
         thumbnail: product.thumbnail,
         category: product.category
     }))
+    showToast(`${product.title} added to cart`, 'cart')
   }
 
   const cartItems = useSelector((state: RootState) => state.cart.items)
@@ -45,26 +48,23 @@ export default function ProductsSection() {
 </h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {isLoading ? (
-          <div>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <ProductSkeleton key={i} />
-            ))}
-          </div>
+          Array.from({ length: 8 }).map((_, i) => (
+            <ProductSkeleton key={i} />
+          ))
         ) : (
-            
           storeProducts.map((item) => (
-        <ProductCard
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            category={item.category}
-            brand={item.brand}
-            stock={item.stock}
-            price={item.price}
-            thumbnail={item.thumbnail}
-            badge={getBadge(item)}
-            isInCart={cartItems.some((ci) => ci.productId === item.id)}
-            onAddToCart={handleAddTocart}
+            <ProductCard
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              category={item.category}
+              brand={item.brand}
+              stock={item.stock}
+              price={item.price}
+              thumbnail={item.thumbnail}
+              badge={getBadge(item)}
+              isInCart={cartItems.some((ci) => ci.productId === item.id)}
+              onAddToCart={handleAddTocart}
             />
           ))
         )}
