@@ -1,17 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { CheckoutHeader } from "@/components/checkout/CheckoutHeader";
-import { ContactInformationForm } from "@/components/checkout/ContactInformationForm";
-import { DeliveryAddressForm } from "@/components/checkout/DeliveryAddressForm";
-import { PaymentMethod } from "@/components/checkout/PaymentMethod";
-import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
+import { CheckoutHeader } from "@/app/checkout/component/CheckoutHeader";
+import { ContactInformationForm } from "@/app/checkout/component/ContactInformationForm";
+import { DeliveryAddressForm } from "@/app/checkout/component/DeliveryAddressForm";
+// import { PaymentMethod } from "@/components/checkout/PaymentMethod";
+import { CheckoutOrderSummary } from "@/app/checkout/component/CheckoutOrderSummary";
 import Breadcrumb from "@/components/ui/breadCrumb";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useRouter } from "next/navigation";
 import { setInitiating, setProcessing, sdkCompleted, setFailed } from "@/store/slices/paymentSlice";
 import { useInitPaymentMutation } from "@/store/api/paymentApi";
 import { useInterswitch } from "@/hooks/useInterswitch";
+import { useToast } from "@/components/shared/toast/ToastProvider";
 
 declare global {
   interface Window {
@@ -39,6 +40,7 @@ export default function CheckoutPage() {
   const paymentStatus = useAppSelector((state) => state.payment.status);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { showToast } = useToast();
 
   
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -47,7 +49,7 @@ export default function CheckoutPage() {
 
   const [initPayment, { isLoading: isInitiating }] = useInitPaymentMutation();
 
-  const { ready: iswReady, error: iswError } = useInterswitch();
+  useInterswitch();
 
   // Load saved form data on mount
   useEffect(() => {
@@ -96,15 +98,15 @@ export default function CheckoutPage() {
   }
 
   async function handlePay() {
-    if (!validate()) return;
+    if (!validate()) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
 
     dispatch(setInitiating());
 
     try {
-      if (!iswReady) {
-        dispatch(setFailed(iswError || "Payment gateway not ready. Please wait and try again."));
-        return;
-      }
+      localStorage.setItem("luxe_receipt_items", JSON.stringify(items));
 
       const result = await initPayment({
         amount: totalInKobo,
@@ -130,7 +132,7 @@ export default function CheckoutPage() {
         cust_mobile_no: contact.phoneNumber,
         pay_item_name: "LUXE Order",
         mode: process.env.NEXT_PUBLIC_ISW_MODE,
-        onComplete: (response: { responseCode: string; txnref: string }) => {
+        onComplete: (response: { responseCode: string; txnref: string }) => {  
           sessionStorage.setItem("luxe_txn_ref", response.txnref);
           dispatch(
             sdkCompleted({
@@ -142,6 +144,7 @@ export default function CheckoutPage() {
       });
     } catch {
       dispatch(setFailed("Could not initiate payment. Please try again."));
+      showToast('Payment initiation failed. Please try again.', 'error');
     }
   }
 
@@ -167,7 +170,7 @@ export default function CheckoutPage() {
               setAddress((prev) => ({ ...prev, [field]: value }))
             }
           />
-          <PaymentMethod />
+          {/* <PaymentMethod /> */}
         </div>
 
         {/* Right: Summary */}

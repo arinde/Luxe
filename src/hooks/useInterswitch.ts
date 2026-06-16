@@ -1,31 +1,27 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function useInterswitch() {
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const scriptLoaded = useRef(false);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_ISW_SCRIPT_URL;
-    if (!url) {
-      setError("ISW_SCRIPT_URL is not configured");
-      return;
-    }
+    if (scriptLoaded.current) return;
 
-    const existing = document.querySelector(`script[src="${url}"]`);
+    const existing = document.querySelector(
+      `script[src="${process.env.NEXT_PUBLIC_ISW_SCRIPT_URL}"]`
+    );
     if (existing) {
-      setReady(true);
+      scriptLoaded.current = true;
       return;
     }
 
     const script = document.createElement("script");
-    script.src = url;
+    script.src = process.env.NEXT_PUBLIC_ISW_SCRIPT_URL!;
     script.async = true;
-    script.onload = () => setReady(true);
-    script.onerror = () => setError("Failed to load payment script");
+    script.onload = () => { scriptLoaded.current = true; };
     document.body.appendChild(script);
-  }, []);
 
-  return { ready, error };
+    return () => {
+      // don't remove on unmount — other pages may still need it
+    };
+  }, []);
 }

@@ -2,20 +2,26 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useGetProductsCategoryQuery } from "@/store/api/productApi";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setCategory } from "@/store/slices/productSlice";
 
 interface HeroSectionProps {
   onShopNow?: () => void;
-  onCategoryChange?: (category: string) => void;
-  activeCategory?: string;
 }
 
-const categories = ["All", "Handbags", "Jewellery", "Fragrance"];
+// const categories = ["All", "Handbags", "Jewellery", "Fragrance"];
 
 export function HeroSection({
   onShopNow,
-  onCategoryChange,
-  activeCategory = "All",
 }: HeroSectionProps) {
+
+  const dispatch = useAppDispatch()
+ const { data, error, isLoading } = useGetProductsCategoryQuery()
+ const categories = data ?? []
+
+ const activeCategory = useAppSelector((state) => state.category.selectedCategory)
+ 
   return (
     <section className="bg-[#0C0C0C] px-6 md:px-12 pt-16 pb-12">
       {/* Collection Badge */}
@@ -52,17 +58,30 @@ export function HeroSection({
 
       {/* Category Pills */}
       <div className="flex items-center gap-3 flex-wrap">
-        {categories.map((cat) => (
           <button
-            key={cat}
-            onClick={() => onCategoryChange?.(cat)}
+            key={'all'}
+            value={'all'}
+            onClick={() => dispatch(setCategory('all'))}
             className={`px-5 py-2.5 rounded-full text-[13px] font-medium tracking-wide border transition-colors duration-200 cursor-pointer ${
-              activeCategory === cat
+              activeCategory === 'all'
                 ? "bg-[#E8C547] text-[#0C0C0C] border-[#E8C547]"
                 : "bg-transparent text-[#888888] border-[#2A2A2A] hover:border-[#F5F5F3] hover:text-[#F5F5F3]"
             }`}
           >
-            {cat}
+            All
+          </button>
+        {categories.map((cat) => (
+          <button
+            key={cat.slug}
+            value={cat.slug}
+            onClick={() => dispatch(setCategory(cat.slug))}
+            className={`px-5 py-2.5 rounded-full text-[13px] font-medium tracking-wide border transition-colors duration-200 cursor-pointer ${
+              activeCategory === cat.slug
+                ? "bg-[#E8C547] text-[#0C0C0C] border-[#E8C547]"
+                : "bg-transparent text-[#888888] border-[#2A2A2A] hover:border-[#F5F5F3] hover:text-[#F5F5F3]"
+            }`}
+          >
+            {cat.name}
           </button>
         ))}
       </div>

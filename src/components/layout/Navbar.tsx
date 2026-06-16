@@ -6,14 +6,14 @@ interface NavbarProps {
   cartCount: number;
   onCartClick: () => void;
   onLogoClick: () => void;
+  onPaymentClick: () => void;
+  onAdminClick: () => void;
 }
 
-export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
+export function Navbar({ cartCount, onCartClick, onLogoClick, onPaymentClick, onAdminClick }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mounted, setIsMounted] = useState(false)
-
+  const [mounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), [])
-
   return (
     <>
       <nav className="sticky top-0 z-50 h-16 flex items-center justify-between px-6 bg-[#0C0C0C]/85 backdrop-blur-xl border-b border-[#2A2A2A]">
@@ -34,6 +34,18 @@ export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
               {item}
             </span>
           ))}
+          <button
+            onClick={onPaymentClick}
+            className="text-[13px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none"
+          >
+            Payments
+          </button>
+          <button
+            onClick={onAdminClick}
+            className="text-[13px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none"
+          >
+            Admin
+          </button>
         </div>
 
         {/* Right side: Cart + Mobile Menu Toggle */}
@@ -73,6 +85,12 @@ export function Navbar({ cartCount, onCartClick, onLogoClick }: NavbarProps) {
               {item}
             </span>
           ))}
+          <button
+            onClick={() => { setMenuOpen(false); onPaymentClick(); }}
+            className="text-[15px] font-normal tracking-[0.03em] text-[#888888] cursor-pointer transition-colors duration-200 hover:text-[#F5F5F3] bg-transparent border-none text-left"
+          >
+            Payments
+          </button>
         </div>
       )}
     </>

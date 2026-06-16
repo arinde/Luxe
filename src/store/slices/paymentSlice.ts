@@ -51,7 +51,7 @@ const paymentSlice = createSlice({
     ) {
       const { txnRef } = action.payload;
       state.txnRef = txnRef;
-      state.status = "verifying";
+      state.status = "verifying"; // always
     },
     setVerifyResult(
       state,
@@ -60,7 +60,7 @@ const paymentSlice = createSlice({
       const { responseCode, message } = action.payload;
       state.responseCode = responseCode;
       state.verifiedAt = Date.now();
-      if (responseCode === "00") {
+      if (responseCode === "00" || responseCode === "Z1") {
         state.status = "success";
       } else {
         state.status = "failed";

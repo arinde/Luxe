@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const data: ISWTransactionResponse = await requeryRes.json();
+    const rawText = await requeryRes.text();
+    const data: ISWTransactionResponse = rawText ? JSON.parse(rawText) : {};
 
     const responseCode = data.ResponseCode ?? data.responseCode ?? "XX";
     const responseDescription =
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
 
     const isSuccess =
       responseCode === "00" ||
-      (process.env.ISW_MODE === "TEST" && responseCode === "Z1");
+      (process.env.NEXT_PUBLIC_ISW_MODE === "TEST" && responseCode === "Z1");
 
     let status: "success" | "failed" | "cancelled";
     if (isSuccess) {
@@ -69,7 +70,8 @@ export async function GET(req: NextRequest) {
       responseCode,
       message: responseDescription,
     });
-  } catch {
+  } catch (err) {
+    console.error("Verify route error:", err);
     return NextResponse.json(
       {
         error: "Internal server error",

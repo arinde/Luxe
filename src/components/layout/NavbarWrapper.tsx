@@ -13,6 +13,8 @@ export function NavbarWrapper() {
       cartCount={cartCount}
       onCartClick={() => router.push("/cart")}
       onLogoClick={() => router.push("/")}
+      onPaymentClick={() => router.push("/payment")}
+      onAdminClick={() => router.push("/admin")}
     />
   );
 }
