@@ -53,15 +53,11 @@ function PaymentStatusContent() {
   useEffect(() => {
     if (status === "success") {
       dispatch(clearCart());
-      showToast('Payment successful! Thank you for your order.', 'success');
-      sessionStorage.removeItem("luxe_txn_ref");
-      sessionStorage.removeItem("luxe_txn_amount");
     } else if (status === "failed") {
       showToast('Payment failed. Please try again.', 'error');
     } else if (status === "cancelled") {
-      showToast('Payment was cancelled.', 'info');
     }
-  }, [status, dispatch, showToast]);
+  }, [status, dispatch]);
 
   // Persist completed transaction to history
   useEffect(() => {
