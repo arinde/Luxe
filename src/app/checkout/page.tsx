@@ -57,7 +57,15 @@ export default function CheckoutPage() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.contact) setContact(parsed.contact);
+        if (parsed.contact) {
+          // Filter out placeholder values
+          const filteredContact = {
+            fullName: parsed.contact.fullName || "",
+            email: parsed.contact.email || "",
+            phoneNumber: parsed.contact.phoneNumber?.startsWith("+") ? parsed.contact.phoneNumber : "",
+          };
+          setContact(filteredContact);
+        }
         if (parsed.address) setAddress(parsed.address);
       } catch {}
     }
@@ -91,7 +99,11 @@ export default function CheckoutPage() {
     const newErrors: Record<string, string> = {};
     if (!contact.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!contact.email.trim()) newErrors.email = "Email is required";
-    if (!contact.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required";
+    if (!contact.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required";
+    } else if (!contact.phoneNumber.startsWith("+")) {
+      newErrors.phoneNumber = "Please enter a valid phone number";
+    }
     if (!address.address.trim()) newErrors.address = "Delivery address is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
