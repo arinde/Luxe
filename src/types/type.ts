@@ -23,3 +23,17 @@ export interface categories {
     name: string,
     url: string
 }
+
+ type transactionStatus = "success" | "failed" | "cancelled"
+
+export interface transactionData {
+        txnRef: string,
+        amount: number,
+        status: transactionStatus,
+        responseCode: string,
+        message: string,
+        completedAt: number,
+}
+export interface getTransactionsResponse {
+    transactions: transactionData[]
+}

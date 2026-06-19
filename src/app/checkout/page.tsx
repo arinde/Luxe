@@ -82,7 +82,7 @@ export default function CheckoutPage() {
       const txnRef = sessionStorage.getItem("luxe_txn_ref");
       if (txnRef) router.push(`/payment/status?ref=${txnRef}`);
     }
-    if (paymentStatus === "cancelled" || paymentStatus === "failed") {
+    if (paymentStatus === "cancelled" || paymentStatus === "failed" || paymentStatus === "error") {
       router.push("/payment/status?ref=none");
     }
   }, [paymentStatus, router]);

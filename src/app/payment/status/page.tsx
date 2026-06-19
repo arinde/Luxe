@@ -10,6 +10,16 @@ import ResultCard from "../component/ResultCard";
 import Breadcrumb from "@/components/ui/breadCrumb";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 
+
+interface saveTransactionData {
+  txnRef: string;
+  amount: number;
+  status: string;
+  responseCode: string;
+  message: string;
+  completedAt: number;
+}
+
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const txnRef = searchParams.get("ref");
@@ -35,6 +45,19 @@ function PaymentStatusContent() {
     { skip: shouldSkip }
   );
 
+  async function SaveTransaction(transactionData : saveTransactionData){
+    try{
+      await fetch('/api/transactions', {
+        method: "POST",
+        body: JSON.stringify(transactionData),
+        headers: {"Content-Type": "application/json"}
+      })
+    } catch(err){
+      console.error("Failed to save transaction:", err);
+      showToast(`${err} Failed to Save Transaction`, 'error')
+      
+    }
+  }
   useEffect(() => {
     if (data) {
       dispatch(
@@ -51,17 +74,46 @@ function PaymentStatusContent() {
   }, [isError, dispatch, showToast]);
 
   useEffect(() => {
-    if (status === "success") {
-      dispatch(clearCart());
-    } else if (status === "failed") {
-      showToast('Payment failed. Please try again.', 'error');
-    } else if (status === "cancelled") {
+    // Save ALL transaction types to database (success, failed, cancelled, error)
+    if ((status === "success" || status === "failed" || status === "cancelled" || status === "error") && txnRef && txnRef !== "none") {
+      const transactionData: saveTransactionData = {
+        txnRef: txnRef,
+        amount: amount ?? storedAmount,
+        status: status,
+        responseCode: responseCode ?? (status === "cancelled" ? "CANCELLED" : ""),
+        message: error ?? (status === "cancelled" ? "Transaction was cancelled by user" : status === "error" ? "Transaction error occurred" : "Payment failed"),
+        completedAt: Date.now(),
+      };
+      
+      SaveTransaction(transactionData);
+      
+      // Show appropriate toast messages
+      if (status === "success") {
+        dispatch(clearCart());
+      } else if (status === "failed") {
+        showToast('Payment failed. Please try again.', 'error');
+      } else if (status === "cancelled") {
+        showToast('Payment was cancelled.', 'info');
+      } else if (status === "error") {
+        showToast('Transaction error occurred. Please try again.', 'error');
+      }
     }
-  }, [status, dispatch]);
+  }, [status, dispatch, amount, txnRef, responseCode, error, storedAmount, showToast]);
+
+  // useEffect(() => {
+  //   SaveTransaction({
+  //     txnRef: "7dhsdisdjdd87cw",
+  //     amount: 1273900,
+  //     status: "success",
+  //     responseCode: "00",
+  //     message: "the tranaction was succefful",
+  //     completedAt: Date.now(),
+  //   })
+  // })
 
   // Persist completed transaction to history
   useEffect(() => {
-    if (status === "success" || status === "failed" || status === "cancelled") {
+    if (status === "success" || status === "failed" || status === "cancelled" || status === "error") {
       const record: any = {
         txnRef: txnRef || sessionStorage.getItem("luxe_txn_ref") || "",
         amount: amount ?? storedAmount,

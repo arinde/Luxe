@@ -72,6 +72,17 @@ function getConfig(
         showSecondary: true,
       };
 
+    case "error":
+      return {
+        icon: <AlertCircle size={48} className="text-[#E05A5A]" />,
+        title: "Transaction Error",
+        subtitle: error ?? "A transaction error occurred (Code: Z1). Please try again.",
+        showAmount: false,
+        primaryLabel: "Try Again",
+        primaryAction: "retry",
+        showSecondary: true,
+      };
+
     default:
       return {
         icon: <Loader2 size={48} className="text-[#E8C547] animate-spin" />,
@@ -125,8 +136,8 @@ export default function ResultCard({
         </div>
       )}
 
-      {/* Response code badge for failed */}
-      {status === "failed" && responseCode && (
+      {/* Response code badge for failed or error */}
+      {(status === "failed" || status === "error") && responseCode && (
         <p className="text-[#555555] font-['Inter'] text-xs">
           Reference code: {responseCode}
         </p>

@@ -7,6 +7,7 @@ import {
   getSortedRowModel,
   flexRender,
   SortingState,
+  RowSelectionState,
   type ColumnDef,
 } from "@tanstack/react-table";
 import {
@@ -23,6 +24,9 @@ interface DataTableProps<T> {
   data: T[];
   sorting?: SortingState;
   onSortingChange?: React.Dispatch<React.SetStateAction<SortingState>>;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  enableRowSelection?: boolean;
   emptyMessage?: string;
 }
 
@@ -31,20 +35,34 @@ export default function DataTable<T>({
   data,
   sorting: externalSorting,
   onSortingChange: externalOnSortingChange,
+  rowSelection: externalRowSelection,
+  onRowSelectionChange: externalOnRowSelectionChange,
+  enableRowSelection = false,
   emptyMessage = "No data found.",
 }: DataTableProps<T>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
+  
   const sorting = externalSorting ?? internalSorting;
   const setSorting: React.Dispatch<React.SetStateAction<SortingState>> =
     externalOnSortingChange ?? setInternalSorting;
+  
+  const rowSelection = externalRowSelection ?? internalRowSelection;
+  const setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>> =
+    externalOnRowSelectionChange ?? setInternalRowSelection;
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { 
+      sorting,
+      rowSelection: enableRowSelection ? rowSelection : {},
+    },
     onSortingChange: setSorting,
+    onRowSelectionChange: enableRowSelection ? setRowSelection : undefined,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    enableRowSelection,
   });
 
   if (data.length === 0) {

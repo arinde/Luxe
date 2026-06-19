@@ -7,7 +7,8 @@ export type PaymentStatus =
   | "verifying"
   | "success"
   | "failed"
-  | "cancelled";
+  | "cancelled"
+  | "error";
 
 interface PaymentState {
   status: PaymentStatus;
@@ -60,8 +61,11 @@ const paymentSlice = createSlice({
       const { responseCode, message } = action.payload;
       state.responseCode = responseCode;
       state.verifiedAt = Date.now();
-      if (responseCode === "00" || responseCode === "Z1") {
+      if (responseCode === "00") {
         state.status = "success";
+      } else if (responseCode === "Z1") {
+        state.status = "error";
+        state.error = "Transaction error: The payment could not be processed. Please try again.";
       } else {
         state.status = "failed";
         state.error = message;
