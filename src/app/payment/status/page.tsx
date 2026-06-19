@@ -81,7 +81,7 @@ function PaymentStatusContent() {
         amount: amount ?? storedAmount,
         status: status,
         responseCode: responseCode ?? (status === "cancelled" ? "CANCELLED" : ""),
-        message: error ?? (status === "cancelled" ? "Transaction was cancelled by user" : status === "error" ? "Transaction error occurred" : "Payment failed"),
+        message: error ?? (status === "success" ? "Payment successful" : status === "cancelled" ? "Transaction was cancelled by user" : status === "error" ? "Transaction error occurred" : "Payment failed"),
         completedAt: Date.now(),
       };
       

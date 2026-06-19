@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery,} from "@reduxjs/toolkit/query/react"
 
-type transactionStatus = "success" | "failed" | "cancelled"
+type transactionStatus = "success" | "failed" | "cancelled" | "error"
  interface postTransactionArgs {
     txnRef: string,
     amount: number,

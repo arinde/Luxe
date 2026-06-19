@@ -23,7 +23,7 @@ export interface TransactionRecord {
   _id: string;
   txnRef: string;
   amount: number;
-  status: "success" | "failed" | "cancelled" | "error";
+  status: "success" | "failed" | "cancelled" | "error" | string;
   responseCode: string;
   message: string;
   completedAt: number;
